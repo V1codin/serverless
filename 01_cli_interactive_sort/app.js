@@ -7,7 +7,7 @@ const exitCheck = (answer) => answer.toLowerCase() === 'exit';
 const STATES = {
   initial: {
     message: 'Hello. Enter 10 words or digits dividing them with spaces: ',
-    callback: (dataMap) => async (answer) => {
+    callback: (dataMap) => (answer) => {
       dataMap.clear();
       if (exitCheck(answer)) {
         return 'exit';
@@ -41,7 +41,7 @@ const STATES = {
   },
   output: {
     message: '',
-    callback: () => async () => 'initial',
+    callback: () => () => 'initial',
   },
   sorting: {
     handlers: [
@@ -117,7 +117,7 @@ To exit the program, the user need to enter exit, otherwise the program will rep
 
 Select (1 - 7) and press ENTER: `,
     callback: function (dataMap) {
-      return async (answer) => {
+      return (answer) => {
         if (exitCheck(answer)) {
           return 'exit';
         }
@@ -191,7 +191,7 @@ class App {
     const message = this.current.message;
     const result = await this.cli.attachQuestion(message);
 
-    const nextStateName = await this.current.callback(this.data)(result);
+    const nextStateName = this.current.callback(this.data)(result);
     this.setNextState(nextStateName);
   }
 
