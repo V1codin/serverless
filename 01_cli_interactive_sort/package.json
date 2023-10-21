@@ -1,0 +1,17 @@
+{
+  "name": "01_cli_interactive_sort",
+  "engines": {
+    "node": "~18.17.1"
+  },
+  "version": "1.0.0",
+  "description": "CLI application without any external dependencies that expects the user to enter a few words or numbers separated by a space",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Kyrylo O.",
+  "license": "ISC"
+}
