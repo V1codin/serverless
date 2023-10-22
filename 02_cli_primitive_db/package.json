@@ -1,0 +1,20 @@
+{
+  "name": "02_cli_primitive_db",
+  "engines": {
+    "node": "~18.17.1"
+  },
+  "version": "1.0.0",
+  "description": "CLI application that implemented an interactive tool for database handling",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Kyrylo O.",
+  "license": "ISC",
+  "dependencies": {
+    "inquirer": "^9.2.11"
+  }
+}
