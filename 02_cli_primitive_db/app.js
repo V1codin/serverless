@@ -84,8 +84,8 @@ class DB {
 
   async write(data) {
     try {
-      const dbString = await this.readDb();
-      const db = JSON.parse(dbString);
+      const db = await this.readDb();
+
       const id = db.length + 1;
       data.id = id;
 
