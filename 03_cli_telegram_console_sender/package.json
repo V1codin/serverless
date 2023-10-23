@@ -1,0 +1,22 @@
+{
+  "name": "03_cli_telegram_console_sender",
+  "engines": {
+    "node": "~18.17.1"
+  },
+  "version": "1.0.0",
+  "description": "CLI application that implemented a telegram bot that can act as notes or notepad",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "linux:start": "env $(cat .env | xargs) node app.js",
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Kyrylo O.",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "node-telegram-bot-api": "^0.63.0"
+  }
+}
