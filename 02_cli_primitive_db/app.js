@@ -48,10 +48,14 @@ const QUEUES = {
 };
 
 class CLI {
-  constructor() {}
+  #api;
+
+  constructor(inquirer) {
+    this.#api = inquirer;
+  }
 
   attachQuestion(promptProps) {
-    return inquirer.prompt(promptProps);
+    return this.#api.prompt(promptProps);
   }
 
   write(text) {
@@ -65,13 +69,15 @@ class CLI {
 }
 
 class DB {
+  #dbPath;
+
   constructor(dbPath) {
-    this.dbPath = dbPath;
+    this.#dbPath = dbPath;
   }
 
   async readDb(encoding = 'utf8') {
     try {
-      const dbString = await readFile(this.dbPath, encoding);
+      const dbString = await readFile(this.#dbPath, encoding);
       const db = JSON.parse(dbString);
 
       return db;
@@ -91,7 +97,7 @@ class DB {
 
       db.push(data);
 
-      await writeFile(this.dbPath, JSON.stringify(db));
+      await writeFile(this.#dbPath, JSON.stringify(db));
 
       return true;
     } catch (e) {
@@ -184,6 +190,6 @@ class App {
 }
 
 const db = new DB(DB_FILE_PATH);
-const cli = new CLI();
+const cli = new CLI(inquirer);
 
 new App(db, cli, QUEUES).init();
