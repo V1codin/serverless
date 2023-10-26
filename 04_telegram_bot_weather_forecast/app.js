@@ -10,14 +10,19 @@ const CITY = 'Dnipro';
 const DEFAULT_WEATHER_INTERVAL = 10800;
 const WEATHER_REPORTS_TO_DISPLAY = 5;
 
+const MESSAGES = {
+  fetchingFailMessage: 'Невдалося завантажити прогноз',
+  isFetchingMessage: 'Йде обробка іншого запиту. Зачекайте',
+  greetingMessage: 'Ласкаво просимо до чат-бота',
+  chooseCityMessage:
+    'Оберіть місто (Оберайте Дніпро, давайте, бо іншого вибору у Вас немає)',
+  chooseForecastIntervalMessage: 'Оберіть інтервал прогнозу',
+};
+
 const CONFIG = {
   endpoint: END_POINT,
   numberToDisplay: WEATHER_REPORTS_TO_DISPLAY,
   chatId: CHAT_ID,
-  fetchingFailMessage: 'Weather forecast fetching failed',
-  isFetchingMessage: 'There is another call to process. Please wait',
-  greetingMessage: 'Welcome to weather chat bot',
-  chooseForecastIntervalMessage: 'Choose forecast interval',
   requestParams: {
     q: CITY,
     lang: 'ua',
@@ -26,14 +31,16 @@ const CONFIG = {
   forecastIntervals: [
     {
       time: DEFAULT_WEATHER_INTERVAL,
-      message: 'Get weather forecast with 3 hours range',
+      message: '3 години',
     },
     {
       time: 21600,
-      message: 'Get weather forecast with 6 hours range',
+      message: '6 годин',
     },
   ],
   city: CITY,
+  cityDisplayLang: 'Дніпро',
+  ...MESSAGES,
 };
 
 class AxiosFetcher {
@@ -50,7 +57,7 @@ class AxiosFetcher {
   }
 }
 
-class App {
+class WeatherApp {
   #bot;
   #fetcher;
   #config;
@@ -65,16 +72,18 @@ class App {
 
     this.#forecastInterval = DEFAULT_WEATHER_INTERVAL;
 
-    this.forecastMessage = `Forecast ${config.city}`;
+    this.#config.forecastMessage = `Прогноз для міста ${config.cityDisplayLang}`;
   }
 
-  #getKeyboard() {
-    return this.#config.forecastIntervals.map((item) => {
-      return [item.message];
-    });
+  setForecastMessage(message) {
+    this.#config.forecastMessage = message;
   }
 
-  async #fetchData() {
+  setForecastInterval(interval) {
+    this.#forecastInterval = interval;
+  }
+
+  async fetchData() {
     if (this.#isFetching) {
       this.#bot.sendMessage(
         this.#config.chatId,
@@ -102,85 +111,9 @@ class App {
     }
   }
 
-  #attachIntervalChoicesClick() {
-    this.#config.forecastIntervals.forEach((item) => {
-      const regex = new RegExp(item.message);
-
-      this.#bot.onText(regex, async () => {
-        try {
-          this.#forecastInterval = item.time;
-          const data = await this.#fetchData();
-
-          // for same number of elements for 3 hours and 6 hours of interval
-          const numberToDisplay =
-            (this.#forecastInterval / DEFAULT_WEATHER_INTERVAL) *
-            this.#config.numberToDisplay;
-
-          const message = this.formatWeatherData(
-            data.slice(0, numberToDisplay),
-          );
-
-          await this.#bot.sendMessage(this.#config.chatId, message, {
-            reply_markup: {
-              remove_keyboard: true,
-            },
-          });
-        } catch (e) {
-          console.error('On text callback error', e);
-
-          this.#bot.sendMessage(
-            this.#config.chatId,
-            this.#config.fetchingFailMessage,
-            {
-              reply_markup: {
-                remove_keyboard: true,
-              },
-            },
-          );
-        }
-      });
-    });
-  }
-
-  #attachStartButtonClick() {
-    const regex = new RegExp(this.forecastMessage);
-
-    this.#bot.onText(regex, async () => {
-      try {
-        const keyboard = this.#getKeyboard();
-
-        await this.#bot.sendMessage(
-          this.#config.chatId,
-          this.#config.chooseForecastIntervalMessage,
-          {
-            reply_markup: {
-              keyboard,
-            },
-          },
-        );
-      } catch (e) {
-        console.error('Choose forecast interval error', e);
-      }
-    });
-  }
-
-  #attachStartCallback() {
-    this.#bot.onText(/\/start/, async () => {
-      try {
-        const keyboardButtonText = this.forecastMessage;
-        await this.#bot.sendMessage(
-          this.#config.chatId,
-          this.#config.greetingMessage,
-          {
-            reply_markup: {
-              keyboard: [[keyboardButtonText]],
-              one_time_keyboard: true,
-            },
-          },
-        );
-      } catch (e) {
-        console.error('On text callback error', e);
-      }
+  getKeyboard() {
+    return this.#config.forecastIntervals.map((item) => {
+      return [item.message];
     });
   }
 
@@ -237,20 +170,106 @@ class App {
     return message;
   }
 
-  init() {
-    this.#bot.on('polling_error', (error) => {
-      console.error('Bot polling error', error);
+  attachCallback(fn) {
+    const { callback, regexp } = fn(this.#bot, this.#config);
+    this.#bot.onText(regexp, callback);
+  }
 
-      this.#bot.startPolling({ restart: true });
-    });
-
-    this.#attachIntervalChoicesClick();
-    this.#attachStartCallback();
-    this.#attachStartButtonClick();
+  attachCallbackByRegexp(regexp, fn) {
+    const callback = fn(this.#bot, this.#config);
+    this.#bot.onText(regexp, callback);
   }
 }
 
 const bot = new TelegramBot(TG_API_KEY, { polling: true });
 const fetcher = new AxiosFetcher(axios);
+const app = new WeatherApp(bot, fetcher, CONFIG);
 
-new App(bot, fetcher, CONFIG).init();
+app.attachCallbackByRegexp(/\/start/, (bot, config) => {
+  return async () => {
+    try {
+      await bot.sendMessage(config.chatId, config.greetingMessage, {
+        reply_markup: {
+          keyboard: [['Погода']],
+          one_time_keyboard: true,
+        },
+      });
+    } catch (e) {
+      console.error('On text callback error', e);
+    }
+  };
+});
+
+app.attachCallbackByRegexp(/погода/i, (bot, config) => {
+  return async () => {
+    try {
+      const keyboardButtonText = config.forecastMessage;
+      await bot.sendMessage(config.chatId, config.chooseCityMessage, {
+        reply_markup: {
+          keyboard: [[keyboardButtonText]],
+          one_time_keyboard: true,
+        },
+      });
+    } catch (e) {
+      console.error('On text callback error', e);
+    }
+  };
+});
+
+app.attachCallback((bot, config) => {
+  const regexp = new RegExp(config.forecastMessage);
+  return {
+    callback: async () => {
+      try {
+        const keyboard = app.getKeyboard();
+
+        await bot.sendMessage(
+          config.chatId,
+          config.chooseForecastIntervalMessage,
+          {
+            reply_markup: {
+              keyboard,
+            },
+          },
+        );
+      } catch (e) {
+        console.error('Choose forecast interval error', e);
+      }
+    },
+    regexp,
+  };
+});
+
+CONFIG.forecastIntervals.forEach((item) => {
+  const regex = new RegExp(item.message);
+  app.attachCallbackByRegexp(regex, (bot, config) => {
+    return async () => {
+      try {
+        app.setForecastInterval(item.time);
+        const data = await app.fetchData();
+        6;
+
+        // for same number of elements for 3 hours and 6 hours of interval
+        const numberToDisplay =
+          (item.time / DEFAULT_WEATHER_INTERVAL) * config.numberToDisplay;
+
+        const message = app.formatWeatherData(data.slice(0, numberToDisplay));
+        const keyboard = app.getKeyboard();
+
+        await bot.sendMessage(config.chatId, message, {
+          reply_markup: {
+            keyboard,
+          },
+        });
+      } catch (e) {
+        console.error('On text callback error', e);
+
+        bot.sendMessage(config.chatId, config.fetchingFailMessage, {
+          reply_markup: {
+            remove_keyboard: true,
+          },
+        });
+      }
+    };
+  });
+});
