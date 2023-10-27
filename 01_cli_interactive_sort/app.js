@@ -149,20 +149,13 @@ class CLI {
     });
   }
 
-  async attachQuestion(rawText, isNewLined = false) {
+  attachQuestion(rawText, isNewLined = false) {
     const text = isNewLined ? rawText + '\n' : rawText;
-
-    try {
-      const answer = await new Promise((resolve) => {
-        this.#interface.question(text, (data) => {
-          resolve(data);
-        });
+    return new Promise((resolve) => {
+      this.#interface.question(text, (data) => {
+        resolve(data);
       });
-
-      return answer;
-    } catch (e) {
-      console.error('attach question error', e);
-    }
+    });
   }
 
   write(text) {
