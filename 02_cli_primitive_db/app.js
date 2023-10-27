@@ -175,7 +175,6 @@ class App {
     const rawAnswers = await this.#cli.attachQuestion(this.#addQueue);
     rawAnswers.user = userName;
     this.#setUser(rawAnswers);
-    if (!this.#user) return this.exit();
 
     try {
       await this.#db.write(this.#user);
