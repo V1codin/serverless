@@ -53,7 +53,7 @@ const init = async (urls) => {
     const data = await Promise.allSettled(promises);
     data.forEach((item) => {
       if (item.status === 'fulfilled') {
-        const [isDone, isNot] = findIsDoneProps(item.value);
+        const [isNot, isDone] = findIsDoneProps(item.value);
 
         result[0] += isDone;
         result[1] += isNot;
