@@ -55,6 +55,7 @@ export const SIGN_UP_BODY_VALIDATION: Data_NS.SchemaValidation[] = [
     type: 'string',
     min: EMAIL_STRING_MIN_LENGTH,
     max: EMAIL_STRING_MAX_LENGTH,
+    regexp: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g,
   },
   {
     data: 'password',

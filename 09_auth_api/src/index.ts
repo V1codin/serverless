@@ -22,19 +22,19 @@ app.use(authTokenMiddleware);
 
 app.post('/auth/sign-in', async (req, res) => {
   try {
+    const body = req.body;
+    const user = await db.getUserByEmail(body.email || '');
+
+    if (!user) {
+      throw new ExceptionHandler('User not found', 404);
+    }
+
     const isValidBody = crypt.validateSchemaPrimitives(
       req.body,
       SIGN_IN_BODY_VALIDATION,
     );
 
     if (!isValidBody) {
-      throw new ExceptionHandler('Invalid email or password', 404);
-    }
-
-    const body = req.body;
-    const user = await db.getUserByEmail(body.email);
-
-    if (!user) {
       throw new ExceptionHandler('Invalid email or password', 404);
     }
 
@@ -88,6 +88,13 @@ app.post('/auth/sign-in', async (req, res) => {
 
 app.post('/auth/sign-up', async (req, res) => {
   try {
+    const body = req.body;
+    const userFromDB = await db.getUserByEmail(body.email || '');
+
+    if (userFromDB) {
+      throw new ExceptionHandler('User already exists', 409);
+    }
+
     const isValidBody = crypt.validateSchemaPrimitives(
       req.body,
       SIGN_UP_BODY_VALIDATION,
@@ -95,13 +102,6 @@ app.post('/auth/sign-up', async (req, res) => {
 
     if (!isValidBody) {
       throw new ExceptionHandler('Invalid email or password', 409);
-    }
-
-    const body = req.body;
-    const userFromDB = await db.getUserByEmail(body.email);
-
-    if (userFromDB) {
-      throw new ExceptionHandler('User already exists', 409);
     }
 
     const hashedPassword = crypt.hash(body.password);

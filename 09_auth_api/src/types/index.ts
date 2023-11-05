@@ -59,6 +59,7 @@ export namespace Data_NS {
     type: string | number;
     min: number;
     max: number;
+    regexp?: RegExp;
   }
 }
 

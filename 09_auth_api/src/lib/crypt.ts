@@ -37,8 +37,15 @@ class Crypt {
       }
 
       if (typeof item.type === 'string') {
-        if (toCheck.length > item.max || toCheck.length < item.min)
+        if (toCheck.length > item.max || toCheck.length < item.min) {
           return false;
+        }
+
+        if (item.regexp) {
+          if (!item.regexp.test(toCheck)) {
+            return false;
+          }
+        }
       }
 
       if (typeof item.type === 'number') {
