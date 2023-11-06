@@ -1,0 +1,42 @@
+{
+  "ts-node": {
+    "files": true,
+    "esm": true
+  },
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "target": "es2017",
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "outDir": "build",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "strictPropertyInitialization": false,
+    "pretty": true,
+    "sourceMap": true,
+    "declaration": true,
+    "noEmitOnError": true,
+    "stripInternal": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "useDefineForClassFields": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "lib": ["esnext"]
+  },
+  "exclude": ["node_modules"]
+}
