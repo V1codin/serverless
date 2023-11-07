@@ -3,18 +3,13 @@ import ExceptionHandler from './lib/exceptionHandler.ts';
 import db from './db/index.ts';
 import LinkHandler from './lib/linkHandler.ts';
 
-import {
-  APP_HOST,
-  APP_PORT,
-  APP_URLS_ROUTE,
-  SERVER_ERROR_MESSAGE,
-} from './constants.ts';
+import { APP_HOST, APP_PORT, SERVER_ERROR_MESSAGE } from './constants.ts';
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get(`/${APP_URLS_ROUTE}/:hash`, async (req, res) => {
+app.get('/:hash', async (req, res) => {
   try {
     const hash = req.params.hash;
     const isInDb = await db.safeCheckId(hash);
@@ -62,7 +57,7 @@ app.post('/short', async (req, res) => {
 
     await db.write(url, linkHash);
 
-    const shortedLink = `${APP_HOST}:${APP_PORT}/${APP_URLS_ROUTE}/${linkHash}`;
+    const shortedLink = `${APP_HOST}:${APP_PORT}/${linkHash}`;
 
     return res.status(200).send({
       success: true,
